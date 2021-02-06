@@ -1,6 +1,7 @@
 plugins {
     id "java"
-    id "net.kyori.indra.publishing.sonatype" version "1.3.1"
+    id "maven-publish"
+    id "signing"
 }
 
 sourceCompatibility = 1.8
@@ -23,9 +24,19 @@ repositories {
 dependencies {
 }
 
-indra {
-    github("LXGaming", "ClassLoaderUtils")
-    apache2License()
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    archiveClassifier.set("javadoc")
+    from javadoc.destinationDir
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    archiveClassifier.set("sources")
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives javadocJar
+    archives sourcesJar
 }
 
 jar {
@@ -45,4 +56,59 @@ javadoc {
 processResources {
     from("LICENSE")
     rename("LICENSE", "LICENSE-${archivesBaseName}")
+}
+
+publishing {
+    publications {
+        mavenPublication(MavenPublication) {
+            from components.java
+            groupId group
+            artifactId archivesBaseName
+            version version
+            artifact javadocJar
+            artifact sourcesJar
+            pom {
+                name = "ClassLoaderUtils"
+                description = "ClassLoader Utilities for Java"
+                url = "https://github.com/LXGaming/ClassLoaderUtils"
+                developers {
+                    developer {
+                        id = "lxgaming"
+                        name = "LXGaming"
+                    }
+                }
+                issueManagement {
+                    system = "GitHub Issues"
+                    url = "https://github.com/LXGaming/ClassLoaderUtils/issues"
+                }
+                licenses {
+                    license {
+                        name = "The Apache License, Version 2.0"
+                        url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
+                    }
+                }
+                scm {
+                    connection = "scm:git@github.com:LXGaming/ClassLoaderUtils.git"
+                    developerConnection = "scm:git@github.com:LXGaming/ClassLoaderUtils.git"
+                    url = "https://github.com/LXGaming/ClassLoaderUtils"
+                }
+            }
+        }
+    }
+    repositories {
+        if (project.hasProperty("sonatype.username") && project.hasProperty("sonatype.password")) {
+            maven {
+                name = "sonatype"
+                url = version.contains("-SNAPSHOT") ? "https://oss.sonatype.org/content/repositories/snapshots" : "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+                credentials {
+                    username project.property("sonatype.username")
+                    password project.property("sonatype.password")
+                }
+            }
+        }
+    }
+}
+
+signing {
+    sign publishing.publications
 }

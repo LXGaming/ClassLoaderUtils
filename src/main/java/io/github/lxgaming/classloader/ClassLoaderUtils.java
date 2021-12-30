@@ -91,7 +91,7 @@ public class ClassLoaderUtils {
             // no-op
         }
         
-        throw new UnsupportedOperationException("Unsupported ClassLoader");
+        throw new UnsupportedOperationException("Unsupported ClassLoader: " + classLoader.getClass().getName());
     }
     
     public static URL[] getSystemClassPathURLs() throws Throwable {

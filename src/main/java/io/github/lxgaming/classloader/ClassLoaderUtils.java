@@ -62,7 +62,7 @@ public class ClassLoaderUtils {
                 Unsafe unsafe = getUnsafe();
                 
                 // jdk.internal.loader.BuiltinClassLoader.ucp
-                Field ucpField = classLoaderClass.getDeclaredField("ucp");
+                Field ucpField = findDeclaredField(classLoaderClass, "ucp");
                 long ucpFieldOffset = unsafe.objectFieldOffset(ucpField);
                 Object ucpObject = unsafe.getObject(classLoader, ucpFieldOffset);
                 
@@ -73,7 +73,7 @@ public class ClassLoaderUtils {
                 
                 // Java 9 & 10 - jdk.internal.loader.URLClassPath.urls
                 // Java 11 - jdk.internal.loader.URLClassPath.unopenedUrls
-                Field urlsField = getField(classPathClass.getDeclaredFields(), "urls", "unopenedUrls");
+                Field urlsField = findDeclaredField(classPathClass, "urls", "unopenedUrls");
                 long urlsFieldOffset = unsafe.objectFieldOffset(urlsField);
                 Collection<URL> urls = (Collection<URL>) unsafe.getObject(ucpObject, urlsFieldOffset);
                 
@@ -124,7 +124,7 @@ public class ClassLoaderUtils {
                 Unsafe unsafe = getUnsafe();
                 
                 // jdk.internal.loader.BuiltinClassLoader.ucp
-                Field ucpField = classLoaderClass.getDeclaredField("ucp");
+                Field ucpField = findDeclaredField(classLoaderClass, "ucp");
                 long ucpFieldOffset = unsafe.objectFieldOffset(ucpField);
                 Object ucpObject = unsafe.getObject(classLoader, ucpFieldOffset);
                 
@@ -141,13 +141,18 @@ public class ClassLoaderUtils {
         throw new UnsupportedOperationException("Unsupported ClassLoader");
     }
     
-    private static Field getField(Field[] fields, String... names) throws NoSuchFieldException {
-        for (Field field : fields) {
+    private static Field findDeclaredField(Class<?> type, String... names) throws NoSuchFieldException {
+        for (Field field : type.getDeclaredFields()) {
             for (String name : names) {
                 if (field.getName().equals(name)) {
                     return field;
                 }
             }
+        }
+        
+        Class<?> superClass = type.getSuperclass();
+        if (superClass != null) {
+            return findDeclaredField(type.getSuperclass(), names);
         }
         
         throw new NoSuchFieldException(String.join(", ", names));

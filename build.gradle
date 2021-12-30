@@ -12,9 +12,6 @@ archivesBaseName = "classloaderutils"
 version = "1.0.0"
 
 configurations {
-    provided {
-        compile.extendsFrom(provided)
-    }
 }
 
 repositories {
@@ -24,29 +21,9 @@ repositories {
 dependencies {
 }
 
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    archiveClassifier.set("javadoc")
-    from javadoc.destinationDir
-}
-
-task sourcesJar(type: Jar, dependsOn: classes) {
-    archiveClassifier.set("sources")
-    from sourceSets.main.allSource
-}
-
-artifacts {
-    archives javadocJar
-    archives sourcesJar
-}
-
-jar {
-    from {
-        (configurations.compile - configurations.provided).findAll({
-            it.isDirectory() || it.name.endsWith(".jar")
-        }).collect({
-            it.isDirectory() ? it : zipTree(it)
-        })
-    }
+java {
+    withJavadocJar()
+    withSourcesJar()
 }
 
 javadoc {
@@ -65,8 +42,6 @@ publishing {
             groupId group
             artifactId archivesBaseName
             version version
-            artifact javadocJar
-            artifact sourcesJar
             pom {
                 name = "ClassLoaderUtils"
                 description = "ClassLoader Utilities for Java"

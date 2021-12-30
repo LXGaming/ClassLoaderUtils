@@ -63,8 +63,8 @@ publishing {
                     }
                 }
                 scm {
-                    connection = "scm:git@github.com:LXGaming/ClassLoaderUtils.git"
-                    developerConnection = "scm:git@github.com:LXGaming/ClassLoaderUtils.git"
+                    connection = "scm:git:https://github.com/LXGaming/ClassLoaderUtils.git"
+                    developerConnection = "scm:git:https://github.com/LXGaming/ClassLoaderUtils.git"
                     url = "https://github.com/LXGaming/ClassLoaderUtils"
                 }
             }
